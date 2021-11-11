@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+# Set laravel app up.
+set -e
+
+CURRENT_ROOT=$(pwd)
+
+cd ${CURRENT_ROOT} || exit
+
+if [[ "${LARAVEL_CMD}" == "composer"* ]]; then
+    CMD=$(echo "${LARAVEL_CMD}" | sed -e "s/composer//g")
+    docker run --rm -it -v $CURRENT_ROOT:/app composer:2 ${CMD} ${LARAVEL_PATH}
+    sudo chown -R $(whoami):docker ${LARAVEL_PATH}
+else
+    ${LARAVEL_CMD}
+fi
+
+SOURCE_ENV_FILE=${CURRENT_ROOT}/${LARAVEL_PATH}/.env.example
+TARGET_ENV_FILE=${CURRENT_ROOT}/${LARAVEL_PATH}/.env
+
+# copy laravel env file.
+if [[ -f ${SOURCE_ENV_FILE} && ! -f ${TARGET_ENV_FILE} ]]; then
+    cp ${SOURCE_ENV_FILE} ${TARGET_ENV_FILE}
+fi
+
+# replace env vars
+sed -i "s/^DB_HOST=127.0.0.1$/DB_HOST=mysql/g" ${TARGET_ENV_FILE}
+sed -i "s/^DB_DATABASE=laravel$/DB_DATABASE=homestead/g" ${TARGET_ENV_FILE}
+sed -i "s/^DB_PASSWORD=$/DB_PASSWORD=secret/g" ${TARGET_ENV_FILE}
+sed -i "s/^CACHE_DRIVER=file$/CACHE_DRIVER=redis/g" ${TARGET_ENV_FILE}
+sed -i "s/^SESSION_DRIVER=file$/SESSION_DRIVER=redis/g" ${TARGET_ENV_FILE}
+sed -i "s/^REDIS_HOST=127.0.0.1$/REDIS_HOST=redis/g" ${TARGET_ENV_FILE}
+
+if [[ ! -d "${SOURCE_ENV_FILE}/vendor" ]]; then
+    docker run --rm -it -v $CURRENT_ROOT/${LARAVEL_PATH}:/app composer:2 install
+fi
+
+sudo chown -R $(whoami):docker ${LARAVEL_PATH}
+sudo chmod -R 775 ${LARAVEL_PATH}/bootstrap/cache
+sudo chmod -R 775 ${LARAVEL_PATH}/storage
+
+echo -e ""
+echo -e "The ${GREEN}laravel app${NC} has been configured.\n"

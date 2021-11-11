@@ -1,0 +1,10 @@
+/*
+!core/
+!stacks/
+!.editorconfig
+!.env.example
+!.gitignore
+!docker-compose.yml.example
+!LICENSE.md
+!README.md
+!work.sh

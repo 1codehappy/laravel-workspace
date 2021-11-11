@@ -1,0 +1,52 @@
+FROM php:8-cli-alpine
+
+LABEL maintainer="Gilberto Junior <olamundo@gmail.com>"
+
+ARG GROUPNAME
+ARG GROUPID
+ARG USERNAME
+ARG USERID
+ARG MEMORY_LIMIT
+ARG MAX_UPLOAD_FILE
+
+ENV GROUPNAME=${GROUPNAME} \
+  GROUPID=${GROUPID} \
+  USERNAME=${USERNAME} \
+  USERID=${USERID} \
+  MEMORY_LIMIT=${MEMORY_LIMIT} \
+  MAX_UPLOAD_FILE=${MAX_UPLOAD_FILE}
+
+ADD ./php.ini /usr/local/etc/php/conf.d/
+
+RUN mkdir -p /var/html/www \
+  && (getent group ${GROUPID} || addgroup -g ${GROUPID} ${GROUPNAME}) \
+  && export GROUPNAME=$(getent group "$GROUPID" | cut -d: -f1) \
+  && adduser -u ${USERID} -D -G ${GROUPNAME} ${USERNAME} \
+  && chown -R ${USERNAME}:${GROUPNAME} /var/www/html \
+  && chown -R ${USERNAME}:${GROUPNAME} /home/${USERNAME} \
+  && echo "$USERNAME ALL = ( ALL ) NOPASSWD: ALL" >> /etc/sudoers \
+  && apk --no-cache add --virtual .build-deps $PHPIZE_DEPS \
+    gettext \
+  && NUMPROC=$(grep -c ^processor /proc/cpuinfo 2>/dev/null || 1) \
+  && docker-php-ext-install -j${NUMPROC} \
+    pdo_mysql \
+  && pecl install \
+    redis \
+    xdebug \
+  && docker-php-ext-enable \
+    redis \
+    xdebug \
+  && envsubst < /usr/local/etc/php/conf.d/php.ini \
+  && { find /usr/local/lib -type f -print0 | xargs -0r strip --strip-all -p 2>/dev/null || true; } \
+  && apk del .build-deps \
+  && rm -rf \
+    /usr/includes/* \
+    /usr/local/lib/php/doc/* \
+    /usr/share/man/* \
+    /usr/src/* \
+    /var/cache/apk/* \
+    /var/tmp/*
+
+USER ${USERNAME}
+
+WORKDIR /var/www/html
