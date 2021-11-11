@@ -167,7 +167,7 @@ Same then above: `docker-compose run --rm npm <<command>>`. You can uncomment th
 
 - Laravel application: http://localhost
 - PHPMyAdmin: http://localhost:8080
-- Mailhog: http://localhost/8025
+- Mailhog: http://localhost:8025
 
 ## Hot Reloading
 
@@ -191,8 +191,8 @@ If you need access inside the container or to install any package, you can do it
 **Examples:**
 
 ```bash
-./work.sh php
-./work.sh --user=root php apk add --no-cache curl
+./work.sh shell php
+./work.sh shell --user=root php apk add --no-cache curl
 ```
 
 **PS:** *As default you are a regular user in docker container. If you want access as the root user you must add the prefix `--user=root` before the container name.*
