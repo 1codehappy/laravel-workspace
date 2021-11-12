@@ -78,7 +78,7 @@ To build the docker images, you need to execute the command below:
 ./work.sh build
 ```
 
-It takes some time to build. I think you can get a coffee now.
+It takes some time to build. I think you can have a coffee now.
 
 #### Start
 
