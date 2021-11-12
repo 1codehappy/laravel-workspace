@@ -2,4 +2,4 @@
 # Run Yarn commands.
 set -e
 
-docker-compose run --rm yarn "$@"
+docker-compose run --rm --service-ports yarn "$@"

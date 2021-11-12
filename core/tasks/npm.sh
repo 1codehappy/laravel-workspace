@@ -2,4 +2,4 @@
 # Run NPM commands.
 set -e
 
-docker-compose run --rm npm "$@"
+docker-compose run --rm --service-ports npm "$@"

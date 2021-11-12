@@ -173,6 +173,18 @@ Same then above: `docker-compose run --rm npm <<command>>`. You can uncomment th
 
 If you are using `yarn run watch` or `npm run watch`, you need to access the 3000 port:
 
+Add this code at the end of `webpack.mix.js`:
+
+```js
+  .browserSync({
+    proxy: 'nginx',
+    open: false,
+    port: 3000,
+  })
+```
+
+**PS:** *You will need to install browser-sync for hot realoading.*
+
 - http://localhost:3000
 
 ## Plus
