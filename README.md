@@ -139,7 +139,7 @@ You can use the artisan commands using `docker-compose run --rm artisan <<comman
 
 #### Yarn
 
-As the artisan way, you can use `docker-compose run --rm yarn <<command>>`, but there is the Laravel Workspace option. This is the default container for javascript stuff.
+As the artisan way, you can use `docker-compose run --rm yarn <<command>>`, but there is the Laravel Workspace option. You can uncomment if you are creating a monolith system at `docker-compose.yml`.
 
 **Examples:**
 
@@ -169,7 +169,7 @@ Same then above: `docker-compose run --rm npm <<command>>`. You can uncomment th
 - PHPMyAdmin: http://localhost:8080
 - Mailhog: http://localhost:8025
 
-## Hot Reloading
+## Hot Reloading (Monolith)
 
 If you are using `yarn run watch` or `npm run watch`, you need to access the 3000 port:
 

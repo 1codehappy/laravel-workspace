@@ -32,10 +32,10 @@ services:
     ports:
       - 3306:3306
     environment:
-      MYSQL_DATABASE: homestead
-      MYSQL_USERNAME: homestead
-      MYSQL_PASSWORD: secret
-      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-homestead}
+      MYSQL_USERNAME: ${MYSQL_USERNAME:-homestead}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-secret}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-secret}
       SERVICE_TAGS: dev
       SERVICE_NAME: mysql
     networks:
@@ -45,10 +45,9 @@ services:
     image: phpmyadmin/phpmyadmin
     environment:
       PMA_HOST: mysql
-      PMA_PORT: 3306
-      PMA_USERNAME: root
-      PMA_PASSWORD: secret
-      PMA_ROOT_PASSWORD: secret
+      PMA_USER: root
+      PMA_PASSWORD: ${MYSQL_ROOT_PASSWORD:-secret}
+      PMA_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-secret}
     ports:
       - 8080:80
     depends_on:
@@ -98,7 +97,7 @@ services:
       - laravel
 
   #
-  # Uncoment npm and comment yarn if you prefer npm
+  # If you are creating a monolith system, uncomment npm or yarn as you wish
   #
   # npm:
   #   build:
@@ -117,24 +116,24 @@ services:
   #   entrypoint: ['npm']
   #   networks:
   #     - laravel
-
-  yarn:
-    build:
-      context: ./stacks/npm
-      args:
-        - USERNAME=${USERNAME:-docker}
-        - GROUPNAME=${GROUPNAME:-docker}
-        - USERID=${USERID:-1000}
-        - GROUPID=${GROUPID:-1000}
-    volumes:
-      - ${LARAVEL_PATH}:/var/www/html
-    ports:
-      - 3000:3000
-      - 3001:3001
-    working_dir: /var/www/html
-    entrypoint: ['yarn']
-    networks:
-      - laravel
+  #
+  # yarn:
+  #   build:
+  #     context: ./stacks/npm
+  #     args:
+  #       - USERNAME=${USERNAME:-docker}
+  #       - GROUPNAME=${GROUPNAME:-docker}
+  #       - USERID=${USERID:-1000}
+  #       - GROUPID=${GROUPID:-1000}
+  #   volumes:
+  #     - ${LARAVEL_PATH}:/var/www/html
+  #   ports:
+  #     - 3000:3000
+  #     - 3001:3001
+  #   working_dir: /var/www/html
+  #   entrypoint: ['yarn']
+  #   networks:
+  #     - laravel
 
   artisan:
     build:
