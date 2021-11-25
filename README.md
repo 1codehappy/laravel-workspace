@@ -46,6 +46,11 @@ LARAVEL_CMD="git clone git@github.com:vendor/repository.git"
 
 MEMORY_LIMIT=256M
 MAX_UPLOAD_FILE=20M
+
+MYSQL_DATABASE=laravel
+MYSQL_USERNAME=homestead
+MYSQL_PASSWORD=secret
+MYSQL_ROOT_PASSWORD=secret
 ```
 
 These settings will be used to configure the **Laravel Workspace**.
