@@ -11,7 +11,7 @@ if [[ "${LARAVEL_CMD}" == "composer"* ]]; then
     docker run --rm -it -v $CURRENT_ROOT:/app composer:2 ${CMD} ${LARAVEL_PATH}
     sudo chown -R $(whoami):docker ${LARAVEL_PATH}
 else
-    ${LARAVEL_CMD}
+    ${LARAVEL_CMD} ${LARAVEL_PATH}
 fi
 
 SOURCE_ENV_FILE=${CURRENT_ROOT}/${LARAVEL_PATH}/.env.example
@@ -24,14 +24,17 @@ fi
 
 # replace env vars
 sed -i "s/^DB_HOST=127.0.0.1$/DB_HOST=mysql/g" ${TARGET_ENV_FILE}
-sed -i "s/^DB_DATABASE=laravel$/DB_DATABASE=homestead/g" ${TARGET_ENV_FILE}
-sed -i "s/^DB_PASSWORD=$/DB_PASSWORD=secret/g" ${TARGET_ENV_FILE}
+sed -i "s/^DB_DATABASE=laravel$/DB_DATABASE=${MYSQL_DATABASE}/g" ${TARGET_ENV_FILE}
+sed -i "s/^DB_USERNAME=laravel$/DB_USERNAME=${MYSQL_USERNAME}/g" ${TARGET_ENV_FILE}
+sed -i "s/^DB_PASSWORD=$/DB_PASSWORD=${MYSQL_PASSWORD}/g" ${TARGET_ENV_FILE}
 sed -i "s/^CACHE_DRIVER=file$/CACHE_DRIVER=redis/g" ${TARGET_ENV_FILE}
 sed -i "s/^SESSION_DRIVER=file$/SESSION_DRIVER=redis/g" ${TARGET_ENV_FILE}
 sed -i "s/^REDIS_HOST=127.0.0.1$/REDIS_HOST=redis/g" ${TARGET_ENV_FILE}
 
 if [[ ! -d "${SOURCE_ENV_FILE}/vendor" ]]; then
-    docker run --rm -it -v $CURRENT_ROOT/${LARAVEL_PATH}:/app composer:2 install
+    docker run --rm -it -v $CURRENT_ROOT/${LARAVEL_PATH}:/app composer:2 install \
+        --ignore-platform-reqs \
+        --no-scripts
 fi
 
 sudo chown -R $(whoami):docker ${LARAVEL_PATH}
