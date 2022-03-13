@@ -1,6 +1,6 @@
 # Laravel Workspace
 
-An unique development experience using [Laravel](https//laravel.com) based on docker-compose lwsflow with the minimal settings to your local environment.
+An unique development experience using [Laravel](https//laravel.com) based on docker-compose workflow with the minimal settings to your local environment.
 
 You can customize everything here. Feel free to modify as you need.
 
