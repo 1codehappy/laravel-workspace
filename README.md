@@ -1,6 +1,6 @@
 # Laravel Workspace
 
-An unique development experience using [Laravel](https//laravel.com) based on docker-compose workflow with the minimal settings to your local environment.
+An unique development experience using [Laravel](https//laravel.com) based on docker-compose lwsflow with the minimal settings to your local environment.
 
 You can customize everything here. Feel free to modify as you need.
 
@@ -27,12 +27,22 @@ You can customize everything here. Feel free to modify as you need.
 
 ## Usage
 
+#### Bootstrap
+
+To generate the `.env` and the `docker-compose.yml` file for the **Laravel Workspace** type:
+
+```bash
+./lws.sh bootstrap
+```
+
 #### Env file
+
+__Skip this step if you've already executed the `bootstrap` command.__
 
 Generate the env file:
 
 ```bash
-./work.sh copy-env
+./lws.sh copy-env
 ```
 
 The `.env` file will be created in the root of **Laravel Workspace**.
@@ -57,20 +67,22 @@ These settings will be used to configure the **Laravel Workspace**.
 
 #### Docker compose file
 
-Generate the docker-compose file:
+__Skip this step if you've already executed the `bootstrap` command.__
+
+Generate the `docker-compose.yml` file:
 
 ```bash
-./work.sh copy-compose
+./lws.sh copy-compose
 ```
 
-The `docker-compose.yml` will be created in the root path as the `.env` file.
+The `docker-compose.yml` will be created in the root path.
 
 #### Laravel
 
 The command below will configure the laravel application:
 
 ```bash
-./work.sh app
+./lws.sh app
 ```
 
 You will see the laravel application created according to the `LARAVEL_PATH`.
@@ -80,7 +92,7 @@ You will see the laravel application created according to the `LARAVEL_PATH`.
 To build the docker images, you need to execute the command below:
 
 ```bash
-./work.sh build
+./lws.sh build
 ```
 
 It takes some time to build. I think you can have a coffee now.
@@ -98,9 +110,9 @@ docker-compose up --build
 Or:
 
 ```bash
-./work.sh up
-./work.sh up -d
-./work.sh up -d --build
+./lws.sh up
+./lws.sh up -d
+./lws.sh up -d --build
 ```
 
 #### Stop
@@ -113,33 +125,33 @@ docker-compose down
 Or:
 
 ```bash
-./work.sh down
+./lws.sh down
 ```
 
 #### Composer
 
-You can use the artisan commands using `docker-compose run --rm composer <<command>>` or typing the commands using `work.sh`.
+You can use the artisan commands using `docker-compose run --rm composer <<command>>` or typing the commands using `lws.sh`.
 
 **Examples:**
 
 ```bash
-./work.sh composer
-./work.sh composer install
-./work.sh composer update
-./work.sh composer require <<package>>
+./lws.sh composer
+./lws.sh composer install
+./lws.sh composer update
+./lws.sh composer require <<package>>
 ```
 
 #### Artisan
 
-You can use the artisan commands using `docker-compose run --rm artisan <<command>>` or typing the commands using `work.sh`.
+You can use the artisan commands using `docker-compose run --rm artisan <<command>>` or typing the commands using `lws.sh`.
 
 **Examples:**
 
 ```bash
-./work.sh artisan
-./work.sh artisan key:generate
-./work.sh artisan migrate
-./work.sh artisan tinker
+./lws.sh artisan
+./lws.sh artisan key:generate
+./lws.sh artisan migrate
+./lws.sh artisan tinker
 ```
 
 #### Yarn
@@ -149,10 +161,10 @@ As the artisan way, you can use `docker-compose run --rm yarn <<command>>`, but 
 **Examples:**
 
 ```bash
-./work.sh yarn install
-./work.sh yarn add <<package>>
-./work.sh yarn run watch
-./work.sh yarn build
+./lws.sh yarn install
+./lws.sh yarn add <<package>>
+./lws.sh yarn run watch
+./lws.sh yarn build
 ```
 
 #### Npm
@@ -162,10 +174,10 @@ Same then above: `docker-compose run --rm npm <<command>>`. You can uncomment th
 **Examples:**
 
 ```bash
-./work.sh npm install
-./work.sh npm install <<package>>
-./work.sh npm run watch
-./work.sh npm build
+./lws.sh npm install
+./lws.sh npm install <<package>>
+./lws.sh npm run watch
+./lws.sh npm build
 ```
 
 ## Local environment
@@ -208,17 +220,19 @@ If you need access inside the container or to install any package, you can do it
 **Examples:**
 
 ```bash
-./work.sh shell php
-./work.sh shell --user=root php apk add --no-cache curl
+./lws.sh console
+./lws.sh console --root # logged as root
 ```
 
-**PS:** *As default you are a regular user in docker container. If you want access as the root user you must add the prefix `--user=root` before the container name.*
+**PS:** *As default you are a regular user in docker container. If you want access as the root user you must add the prefix `--root` before the container name.*
 
 And you can check the container logs, if needed:
 
 ```bash
-./work.sh logs nginx
-./work.sh logs -f nginx
+./lws.sh logs nginx
+./lws.sh logs -f nginx
+./lws.sh logs laravel
+./lws.sh logs -f laravel
 ```
 
 ## Available commands
@@ -226,7 +240,7 @@ And you can check the container logs, if needed:
 Type the command below to see all commands:
 
 ```bash
-./work.sh
+./lws.sh
 ```
 
 ---
