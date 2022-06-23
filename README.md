@@ -83,8 +83,6 @@ FRONTEND_PATH=/var/www/html
 FPM_MEMORY_LIMIT=512M
 CLI_MEMORY_LIMIT=1G
 MAX_UPLOAD_FILE=20M
-PERSISTENT_DEPS="sudo"
-BUILD_DEPS="gettext shadow"
 PHP_LIBS="pdo_mysql redis xdebug"
 NEW_RELIC_KEY=
 NEW_RELIC_APP_NAME=
@@ -133,8 +131,6 @@ You need to declare these variables to configure the laravel project path.
 - `FPM_MEMORY_LIMIT`: `php_memory_limit` configuration to web.
 - `CLI_MEMORY_LIMIT`: `php_memory_limit` configuration to console.
 - `MAX_UPLOAD_FILE`: `max_upload_file` and `post_max_size` configuration to web.
-- `PERSISTENT_DEPS`: packages to install.
-- `BUILD_DEPS`: packages to install and delete after installing php extensions.
 - `PHP_LIBS`: PHP/PECL extensions to configure, enable and install them.
 - `NEW_RELIC_KEY`: New Relic key to authorize the agent.
 - `NEW_RELIC_APP_NAME`: New Relic application name.
