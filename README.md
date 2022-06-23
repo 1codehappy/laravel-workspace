@@ -17,15 +17,16 @@ You can customize everything here. Feel free to modify as you need.
     - macOS [install guide](https://docs.docker.com/compose/install/#install-compose-on-macos) (Already installed with Docker for Mac)
     - Linux: [install guide](https://docs.docker.com/compose/install/#install-compose-on-linux-systems)
 
-## Default services
+## Services
 
 - nginx (:80)
-- mysql (:3306)
-- redis (:6379)
-- phpmyadmin (:8080)
-- mailhog (:1025, :8025)
-- minio (:9080)  `optional`.
 - backend (:9000)
+- mysql (:3306)
+- phpmyadmin (:8080)
+- redis (:6379) `optional`.
+- redis-commander (:8081) `optional`.
+- mailhog (:1025, :8025) `optional`.
+- minio (:9001, :9080)  `optional`.
 - frontend (:3000) `optional`.
 - storybook (:6006) `optional`.
 
@@ -36,6 +37,7 @@ Type the follow command in your terminal:
 ```bash
  wget https://github.com/1codehappy/laravel-workspace/archive/refs/heads/master.zip
  unzip master
+ rm master.zip
  cd laravel-workspace-master
  ```
 
@@ -74,7 +76,7 @@ BACKEND_PATH=/var/www/html
 
 # Javascript configs
 FRONTEND_VOL=./frontend
-# FRONTEND_CMD="git clone git@<<GIT_REPOSITORY_PATH>>/<<vendor>>/<<project>>"
+FRONTEND_CMD="git clone git@<<GIT_REPOSITORY_PATH>>/<<vendor>>/<<project>>"
 FRONTEND_PATH=/var/www/html
 
 # PHP configs
@@ -86,6 +88,7 @@ BUILD_DEPS="gettext shadow"
 PHP_LIBS="pdo_mysql redis xdebug"
 NEW_RELIC_KEY=
 NEW_RELIC_APP_NAME=
+NEW_RELIC_AGENT_VERSION=
 
 # Database configs
 MYSQL_DATABASE=lws
@@ -135,6 +138,7 @@ You need to declare these variables to configure the laravel project path.
 - `PHP_LIBS`: PHP/PECL extensions to configure, enable and install them.
 - `NEW_RELIC_KEY`: New Relic key to authorize the agent.
 - `NEW_RELIC_APP_NAME`: New Relic application name.
+- `NEW_RELIC_AGENT_VERSION`: New Relic agent version to download.
 
 Edit your `.env` file and add the [available php extensions](https://github.com/1codehappy/laravel-workspace/blob/master/README.md#available-php-extensions) that you need. You don't need to know what package is required.
 
