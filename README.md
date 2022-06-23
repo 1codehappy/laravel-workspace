@@ -31,10 +31,18 @@ You can customize everything here. Feel free to modify as you need.
 
 ## Installation
 
-Type the follow command in your terminal.
+Type the follow command in your terminal:
 
 ```bash
- wget -O - https://raw.githubusercontent.com/1codehappy/laravel-workspace/master/install.sh | sh -
+ wget https://github.com/1codehappy/laravel-workspace/archive/refs/heads/master.zip
+ unzip master
+ cd laravel-workspace-master
+ ```
+
+ Or
+
+ ```bash
+git clone git@github.com:1codehappy/laravel-workspace.git
  ```
 
 ## Available PHP Extensions
