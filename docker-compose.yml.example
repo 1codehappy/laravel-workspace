@@ -1,30 +1,192 @@
-version: '3'
+version: '3.8'
 
 networks:
-  laravel:
+  lws-net:
 
 services:
+  #
+  # Nginx
+  # @see https://nginx.com
+  # @example docker-compose exec nginx sh
+  #
   nginx:
     build:
       context: ./stacks/nginx
       args:
-        - USERNAME=${USERNAME:-docker}
-        - GROUPNAME=${GROUPNAME:-docker}
-        - USERID=${USERID:-1000}
-        - GROUPID=${GROUPID:-1000}
+        - USER=${LWUSER:-lws}
+        - GID=${LWGID:-1000}
+        - UID=${LWUID:-1000}
         - MAX_UPLOAD_FILE=${MAX_UPLOAD_FILE:-20M}
+        - PATH_TO_APP=${BACKEND_PATH:-/var/www/html}
     ports:
       - 80:80
     volumes:
-      - ${LARAVEL_PATH}:/var/www/html:delegated
+      - ${BACKEND_VOL}:${BACKEND_PATH:-/var/www/html}
     depends_on:
-      - php
+      - backend
       - redis
       - mysql
       - mailhog
     networks:
-      - laravel
+      - lws-net
+  #
+  # Laravel Application.
+  # @see https://localhost
+  # @example docker-compose exec backend "sudo apk add --no-cache curl"
+  #
+  backend:
+    build:
+      context: ./stacks/php
+      args:
+        - USER=${LWUSER:-lws}
+        - GID=${LWGID:-1000}
+        - UID=${LWUID:-1000}
+        - PATH_TO_APP=${BACKEND_PATH:-/var/www/html}
+        - MEMORY_LIMIT=${FPM_MEMORY_LIMIT:-512M}
+        - MAX_UPLOAD_FILE=${MAX_UPLOAD_FILE:-20M}
+        - PHP_LIBS=${PHP_LIBS:-"pdo_mysql redis xdebug"}
+        - NEW_RELIC_KEY=${NEW_RELIC_KEY}
+        - NEW_RELIC_APP_NAME=${NEW_RELIC_APP_NAME}
+        - NEW_RELIC_AGENT_VERSION=${NEW_RELIC_AGENT_VERSION}
+    volumes:
+      - ${BACKEND_VOL}:${BACKEND_PATH:-/var/www/html}:delegated
+    ports:
+      - 9000:9000
+      - 9003:9003
+    networks:
+      - lws-net
+  #
+  # Composer.
+  # @see https://composer.org
+  # @example docker-compose run --rm composer install
+  #
+  composer:
+    build:
+      context: ./stacks/composer
+      args:
+        - USER=${LWUSER:-lws}
+        - GID=${LWGID:-1000}
+        - UID=${LWUID:-1000}
+    volumes:
+      - ${BACKEND_VOL}:${BACKEND_PATH:-/var/www/html}
+    working_dir: ${BACKEND_PATH:-/var/www/html}
+    depends_on:
+      - backend
+    entrypoint: ['composer', '--ignore-platform-reqs']
+    networks:
+      - lws-net
+  #
+  # Laravel artisan.
+  # @see https://laravel.com/docs/master/artisan
+  # @example docker-compose run --rm artisan migrate --seed
+  #
+  artisan:
+    build:
+      context: ./stacks/php
+      args:
+        - USER=${LWUSER:-lws}
+        - GID=${LWGID:-1000}
+        - UID=${LWUID:-1000}
+        - PATH_TO_APP=${BACKEND_PATH:-/var/www/html}
+        - MEMORY_LIMIT=${CLI_MEMORY_LIMIT:-1G}
+        - MAX_UPLOAD_FILE=${MAX_UPLOAD_FILE:-20M}
+        - PHP_LIBS=${PHP_LIBS:-"pdo_mysql redis xdebug"}
+        - NEW_RELIC_KEY=${NEW_RELIC_KEY}
+        - NEW_RELIC_APP_NAME=${NEW_RELIC_APP_NAME}
+        - NEW_RELIC_AGENT_VERSION=${NEW_RELIC_AGENT_VERSION}
+    volumes:
+      - ${BACKEND_VOL}:/var/www/html:delegated
+    depends_on:
+      - mysql
+    entrypoint: ['php', '/var/www/html/artisan']
+    networks:
+      - lws-net
+  #
+  # PestPHP.
+  # uncomment the block bellow if you use pest.
+  # @see https://pestphp.com
+  # @example docker-compose run --rm pest ./tests/Unit
+  #
+  # pest:
+  #   build:
+  #     context: ./stacks/php
+  #     args:
+  #       - USER=${LWUSER:-lws}
+  #       - GID=${LWGID:-1000}
+  #       - UID=${LWUID:-1000}
+  #       - PATH_TO_APP=${BACKEND_PATH:-/var/www/html}
+  #       - MEMORY_LIMIT=${CLI_MEMORY_LIMIT:-1G}
+  #       - MAX_UPLOAD_FILE=${MAX_UPLOAD_FILE:-20M}
+  #       - PERSISTENT_DEPS=${PERSISTENT_DEPS:-"sudo"}
+  #       - BUILD_DEPS=${BUILD_DEPS:-"gettext shadow"}
+  #       - PHP_LIBS=${PHP_LIBS:-"pdo_mysql redis xdebug"}
+  #   volumes:
+  #     - ${BACKEND_VOL}:/var/www/html:delegated
+  #   depends_on:
+  #     - mysql
+  #   entrypoint: ['php', './vendor/bin/pest']
+  #   networks:
+  #     - lws-net
+  #
+  # Frontend application.
+  # @see https://localhost:3000
+  # @example: docker-compose exec frontend sh
+  #
+  # frontend:
+  #   build:
+  #     context: ./stacks/node
+  #     args:
+  #       - USER=${LWUSER:-lws}
+  #       - GID=${LWGID:-1000}
+  #       - UID=${LWUID:-1000}
+  #       - PATH_TO_APP=${FRONTEND_PATH:-/var/www/html}
+  #   volumes:
+  #     - ${FRONTEND_VOL}:${FRONTEND_PATH:-/var/www/html}:delegated
+  #   ports:
+  #     - 3000:3000
+  #   command:
+  #     - npx
+  #     - vite
+  #     - dev
+  #   networks:
+  #     - lws-net
+  #
+  # To open storybook.
+  # @see https://storybook.js.org/
+  # @example https://localhost:6006
+  #
+  # storybook:
+  #   build:
+  #     context: ./stacks/node
+  #     args:
+  #       - USER=${LWUSER:-lws}
+  #       - GID=${LWGID:-1000}
+  #       - UID=${LWUID:-1000}
+  #       - PATH_TO_APP=${FRONTEND_PATH:-/var/www/html}
+  #   volumes:
+  #     - ${FRONTEND_VOL}:${FRONTEND_PATH:-/var/www/html}:delegated
+  #   ports:
+  #     - 6006:6006
+  #   command:
+  #     - yarn
+  #     - storybook
+  #   networks:
+  #     - lws-net
 
+  #
+  # MySql Database.
+  # @see https://mysql.org
+  # @example docker-compose exec mysql sh
+  # @todo Edit the .env file from laravel application
+  # ```
+  #   DB_CONNECTION=mysql
+  #   DB_HOST=mysql
+  #   DB_PORT=3306
+  #   DB_DATABASE=lws
+  #   DB_USERNAME=root
+  #   DB_PASSWORD=secret
+  # ```
+  #
   mysql:
     image: mysql:8
     restart: unless-stopped
@@ -32,15 +194,21 @@ services:
     ports:
       - 3306:3306
     environment:
-      MYSQL_DATABASE: ${MYSQL_DATABASE:-homestead}
-      MYSQL_USERNAME: ${MYSQL_USERNAME:-homestead}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-lws}
+      MYSQL_USERNAME: ${MYSQL_USERNAME:-lws}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD:-secret}
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-secret}
       SERVICE_TAGS: dev
       SERVICE_NAME: mysql
+    volumes:
+      - mysql-data:/var/lib/mysql
     networks:
-      - laravel
-
+      - lws-net
+  #
+  # PHPMyAdmin.
+  # @see https://www.phpmyadmin.net/
+  # @example https://localhost:8080
+  #
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
     environment:
@@ -52,113 +220,89 @@ services:
       - 8080:80
     depends_on:
       - mysql
-    networks:
-      - laravel
-
-  php:
-    build:
-      context: ./stacks/php
-      dockerfile: Dockerfile-fpm
-      args:
-        - USERNAME=${USERNAME:-docker}
-        - GROUPNAME=${GROUPNAME:-docker}
-        - USERID=${USERID:-1000}
-        - GROUPID=${GROUPID:-1000}
-        - MEMORY_LIMIT=${MEMORY_LIMIT:-256M}
-        - MAX_UPLOAD_FILE=${MAX_UPLOAD_FILE:-20M}
-    volumes:
-      - ${LARAVEL_PATH}:/var/www/html:delegated
-    networks:
-      - laravel
-
-  redis:
-    image: redis:alpine
-    restart: unless-stopped
-    ports:
-      - 6379:6379
-    networks:
-      - laravel
-
-  composer:
-    build:
-      context: ./stacks/composer
-      args:
-        - USERNAME=${USERNAME:-docker}
-        - GROUPNAME=${GROUPNAME:-docker}
-        - USERID=${USERID:-1000}
-        - GROUPID=${GROUPID:-1000}
-    volumes:
-      - ${LARAVEL_PATH}:/var/www/html
-    working_dir: /var/www/html
-    depends_on:
-      - php
-    entrypoint: ['composer', '--ignore-platform-reqs']
-    networks:
-      - laravel
-
   #
-  # If you are creating a monolith system, uncomment npm or yarn as you wish
+  # Redis.
+  # @see https://redis.com
+  # @example docker-compose exec redis sh
   #
-  # npm:
-  #   build:
-  #     context: ./stacks/npm
-  #     args:
-  #       - USERNAME=${USERNAME:-docker}
-  #       - GROUPNAME=${GROUPNAME:-docker}
-  #       - USERID=${USERID:-1000}
-  #       - GROUPID=${GROUPID:-1000}
+  # redis:
+  #   image: redis:alpine
+  #   restart: unless-stopped
   #   volumes:
-  #     - ${LARAVEL_PATH}:/var/www/html
+  #     - redis-data:/data
   #   ports:
-  #     - 3000:3000
-  #     - 3001:3001
-  #   working_dir: /var/www/html
-  #   entrypoint: ['npm']
+  #     - 6379:6379
   #   networks:
-  #     - laravel
+  #     - lws-net
   #
-  # yarn:
-  #   build:
-  #     context: ./stacks/npm
-  #     args:
-  #       - USERNAME=${USERNAME:-docker}
-  #       - GROUPNAME=${GROUPNAME:-docker}
-  #       - USERID=${USERID:-1000}
-  #       - GROUPID=${GROUPID:-1000}
-  #   volumes:
-  #     - ${LARAVEL_PATH}:/var/www/html
+  # Redis Commander.
+  # @see https://github.com/joeferner/redis-commander
+  # @example https://localhost:8081
+  #
+  # rc:
+  #   image: rediscommander/redis-commander:latest
+  #   restart: unless-stopped
+  #   environment:
+  #   - REDIS_HOSTS=redis:6379
   #   ports:
-  #     - 3000:3000
-  #     - 3001:3001
-  #   working_dir: /var/www/html
-  #   entrypoint: ['yarn']
+  #   - "8081:8081"
+  #   depends_on:
+  #     - redis
+  #
+  # Mailhog
+  # @see https://github.com/mailhog/MailHog
+  # @example https://localhost:8025
+  # @todo Edit the .env file from laravel application
+  # ```
+  #   MAIL_HOST=mailhog
+  #   MAIL_PORT=1025
+  #   MAIL_FROM_ADDRESS="helloworld@example.com"
+  # ```
+  #
+  # mailhog:
+  #   image: mailhog/mailhog:latest
+  #   ports:
+  #     - 1025:1025
+  #     - 8025:8025
   #   networks:
-  #     - laravel
+  #     - lws-net
+  #
+  # Minio
+  # @see https://laravel-news.com/minio-s3-compliant-storage
+  # @example https://localhost:9001 u:MEJHLMRWKAZTYMEFSRJL p:LBybk6EmwNDGLQztdKkU3DMTVruAWdAEeyDYXwQs
+  # @todo Edit the .env file from laravel application
+  # ```
+  #   AWS_ACCESS_KEY_ID=MEJHLMRWKAZTYMEFSRJL
+  #   AWS_SECRET_ACCESS_KEY=LBybk6EmwNDGLQztdKkU3DMTVruAWdAEeyDYXwQs
+  #   AWS_DEFAULT_REGION=us-east-1
+  #   AWS_BUCKET=local # you will need to create a bucket called `local` at console.
+  #   AWS_ENDPOINT=http://localhost:9080
+  #   AWS_USE_PATH_STYLE_ENDPOINT=true # use false for real s3, use true for minio.
+  # ```
+  #
+  # minio:
+  #   image: minio/minio
+  #   environment:
+  #     MINIO_ACCESS_KEY: MEJHLMRWKAZTYMEFSRJL
+  #     MINIO_SECRET_KEY: LBybk6EmwNDGLQztdKkU3DMTVruAWdAEeyDYXwQs
+  #   command:
+  #     - minio
+  #     - server
+  #     - /data
+  #     - --console-address
+  #     - ":9001"
+  #   restart: unless-stopped
+  #   ports:
+  #     - 9080:9000
+  #     - 9001:9001
+  #   volumes:
+  #     - minio-data:/data
+  #   networks:
+  #     - lws-net
 
-  artisan:
-    build:
-      context: ./stacks/php
-      dockerfile: Dockerfile-cli
-      args:
-        - USERNAME=${USERNAME:-docker}
-        - GROUPNAME=${GROUPNAME:-docker}
-        - USERID=${USERID:-1000}
-        - GROUPID=${GROUPID:-1000}
-        - MEMORY_LIMIT=${MEMORY_LIMIT:-256M}
-        - MAX_UPLOAD_FILE=${MAX_UPLOAD_FILE:-20M}
-    volumes:
-      - ${LARAVEL_PATH}:/var/www/html:delegated
-    depends_on:
-      - mysql
-    working_dir: /var/www/html
-    entrypoint: ['php', '/var/www/html/artisan']
-    networks:
-      - laravel
-
-  mailhog:
-    image: mailhog/mailhog:latest
-    ports:
-      - 1025:1025
-      - 8025:8025
-    networks:
-      - laravel
+# volumes.
+volumes:
+  # data volumes.
+  mysql-data: # MySQL persistent storage.
+  # redis-data: # Redis persistent storage.
+  # minio-data: # Minio persistent storage.

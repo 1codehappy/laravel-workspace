@@ -18,7 +18,7 @@ for TASK_PATH in ${ALL_TASKS}; do
   TASK_HELP=$(cat ${TASK_PATH} | head -2 | tail -1)
 
   # print the help line for the command.
-  printf "bash work.sh ${GREEN}%-25s${NC}" ${TASK_NAME}; printf "${TASK_HELP}\n"
+  printf "bash lws.sh ${GREEN}%-25s${NC}" ${TASK_NAME}; printf "${TASK_HELP}\n"
 done
 
 
