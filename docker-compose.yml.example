@@ -24,9 +24,9 @@ services:
       - ${BACKEND_VOL}:${BACKEND_PATH:-/var/www/html}
     depends_on:
       - backend
-      - redis
       - mysql
-      - mailhog
+      # - redis
+      # - mailhog
     networks:
       - lws-net
   #
